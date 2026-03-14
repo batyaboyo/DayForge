@@ -78,7 +78,14 @@ const ReviewScreen = {
         container.querySelectorAll('.reflect-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const blockId = btn.dataset.blockId;
-                SkipModal.open(blockId, date, { status: 'skipped', didIt: false, finishedIt: false });
+                const block = schedule.find(b => b.id === blockId);
+                // Use actual status, but treat 'not-started' as 'skipped' for the reflection
+                const status = block.status === 'not-started' ? 'skipped' : block.status;
+                SkipModal.open(blockId, date, { 
+                    status: status, 
+                    didIt: block.didIt, 
+                    finishedIt: block.finishedIt 
+                });
             });
         });
 

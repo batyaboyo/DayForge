@@ -29,7 +29,9 @@ const DailyView = {
      * Navigate to a different day
      */
     navigateDay(delta) {
-        this.currentDate.setDate(this.currentDate.getDate() + delta);
+        const newDate = new Date(this.currentDate);
+        newDate.setDate(newDate.getDate() + delta);
+        this.currentDate = newDate;
         this.updateDateDisplay();
         this.render();
     },
@@ -99,7 +101,7 @@ const DailyView = {
      */
     renderBlock(block, currentBlock, isToday) {
         const isCurrent = isToday && currentBlock && currentBlock.id === block.id;
-        const statusClass = block.status.replace('-', '-');
+        const statusClass = block.status;
 
         // Did I do it / Did I finish it display
         let checkDisplay = '';

@@ -26,7 +26,9 @@ const SummaryDashboard = {
      * Navigate to a different week
      */
     navigateWeek(delta) {
-        this.currentWeekStart.setDate(this.currentWeekStart.getDate() + (delta * 7));
+        const newWeekStart = new Date(this.currentWeekStart);
+        newWeekStart.setDate(newWeekStart.getDate() + (delta * 7));
+        this.currentWeekStart = newWeekStart;
         this.updateWeekDisplay();
         this.render();
     },

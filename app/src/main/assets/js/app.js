@@ -13,24 +13,8 @@ const App = {
         WeeklyGoals.init();
         SummaryDashboard.init();
         Notifications.init();
-        this.bindNavigation();
         this.bindThemeToggle();
         this.bindNotificationToggle();
-    },
-
-    initTheme() {
-        const theme = Storage.getTheme();
-        document.documentElement.setAttribute('data-theme', theme);
-        this.updateThemeIcon(theme);
-    },
-
-    bindNavigation() {
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const view = btn.dataset.view;
-                this.navigateTo(view);
-            });
-        });
     },
 
     navigateTo(view) {

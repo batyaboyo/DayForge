@@ -10,7 +10,9 @@ const Storage = {
         SCHEDULES: 'dayforge_schedules',
         TRADES: 'dayforge_trades',
         GOALS: 'dayforge_goals',
-        NOTIFICATIONS_ENABLED: 'dayforge_notifications'
+        NOTIFICATIONS_ENABLED: 'dayforge_notifications',
+        TRADING_JOURNALS: 'dayforge_trading_journals',
+        DAILY_JOURNALS: 'dayforge_daily_journals'
     },
 
     /**
@@ -72,7 +74,10 @@ const Storage = {
      * Get date key in YYYY-MM-DD format
      */
     getDateKey(date = new Date()) {
-        return date.toISOString().split('T')[0];
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     },
 
     /**
@@ -254,7 +259,7 @@ const Storage = {
      * Get trading journal for a specific date
      */
     getTradingJournal(date = new Date()) {
-        const journals = this.get('dayforge_trading_journals') || {};
+        const journals = this.get(this.KEYS.TRADING_JOURNALS) || {};
         const dateKey = this.getDateKey(date);
         return journals[dateKey] || {
             lessonsLearned: '',
@@ -268,20 +273,20 @@ const Storage = {
      * Save trading journal for a specific date
      */
     saveTradingJournal(journal, date = new Date()) {
-        const journals = this.get('dayforge_trading_journals') || {};
+        const journals = this.get(this.KEYS.TRADING_JOURNALS) || {};
         const dateKey = this.getDateKey(date);
         journals[dateKey] = {
             ...journal,
             updatedAt: new Date().toISOString()
         };
-        return this.set('dayforge_trading_journals', journals);
+        return this.set(this.KEYS.TRADING_JOURNALS, journals);
     },
 
     /**
      * Get all trading journals for weekly summary
      */
     getWeekTradingJournals(weekStartDate) {
-        const allJournals = this.get('dayforge_trading_journals') || {};
+        const allJournals = this.get(this.KEYS.TRADING_JOURNALS) || {};
         const weekJournals = [];
 
         for (let i = 0; i < 7; i++) {
@@ -307,7 +312,7 @@ const Storage = {
      * Get daily journal for a specific date
      */
     getDailyJournal(date = new Date()) {
-        const journals = this.get('dayforge_daily_journals') || {};
+        const journals = this.get(this.KEYS.DAILY_JOURNALS) || {};
         const dateKey = this.getDateKey(date);
         return journals[dateKey] || {
             morning: '',
@@ -322,13 +327,13 @@ const Storage = {
      * Save daily journal for a specific date
      */
     saveDailyJournal(journal, date = new Date()) {
-        const journals = this.get('dayforge_daily_journals') || {};
+        const journals = this.get(this.KEYS.DAILY_JOURNALS) || {};
         const dateKey = this.getDateKey(date);
         journals[dateKey] = {
             ...journal,
             updatedAt: new Date().toISOString()
         };
-        return this.set('dayforge_daily_journals', journals);
+        return this.set(this.KEYS.DAILY_JOURNALS, journals);
     }
 };
 

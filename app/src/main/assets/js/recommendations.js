@@ -116,8 +116,8 @@ const Recommendations = {
         const recommendations = [];
 
         // High skip rate (more than 40% of blocks skipped)
-        const skipRate = stats.skippedBlocks / stats.totalBlocks;
-        if (skipRate > 0.4) {
+        const skipRate = stats.totalBlocks > 0 ? stats.skippedBlocks / stats.totalBlocks : 0;
+        if (stats.totalBlocks > 0 && skipRate > 0.4) {
             recommendations.push({
                 type: 'caution',
                 icon: '🔥',
