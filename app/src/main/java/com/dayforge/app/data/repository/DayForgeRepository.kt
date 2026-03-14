@@ -1,0 +1,30 @@
+package com.dayforge.app.data.repository
+
+import com.dayforge.app.data.dao.DayForgeDao
+import com.dayforge.app.data.entities.ScheduleBlock
+import com.dayforge.app.data.entities.Trade
+import com.dayforge.app.data.entities.JournalEntry
+import kotlinx.coroutines.flow.Flow
+
+class DayForgeRepository(private val dao: DayForgeDao) {
+    // Schedule
+    fun getScheduleForDate(date: String): Flow<List<ScheduleBlock>> = dao.getScheduleForDate(date)
+    
+    suspend fun saveSchedule(blocks: List<ScheduleBlock>) = dao.insertScheduleBlocks(blocks)
+    
+    suspend fun updateBlock(block: ScheduleBlock) = dao.updateScheduleBlock(block)
+
+    // Trades
+    fun getTradesForDate(date: String): Flow<List<Trade>> = dao.getTradesForDate(date)
+    
+    suspend fun addTrade(trade: Trade) = dao.insertTrade(trade)
+    
+    suspend fun updateTrade(trade: Trade) = dao.updateTrade(trade)
+    
+    suspend fun deleteTrade(trade: Trade) = dao.deleteTrade(trade)
+
+    // Journals
+    suspend fun getJournal(date: String, type: String): JournalEntry? = dao.getJournalEntry(date, type)
+    
+    suspend fun saveJournal(entry: JournalEntry) = dao.insertJournalEntry(entry)
+}

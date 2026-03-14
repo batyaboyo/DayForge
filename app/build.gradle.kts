@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -48,5 +50,18 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation("androidx.webkit:webkit:1.12.1")
+    
+    // Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+    
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
+    
+    // Lifecycle
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }
