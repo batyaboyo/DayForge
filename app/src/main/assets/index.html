@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DayForge - Life Operating System">
+    <title>DayForge - Life Operating System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <h1>DayForge</h1>
+            </div>
+        </div>
+        <nav class="main-nav">
+            <button class="nav-btn active" data-view="daily">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Daily</span>
+            </button>
+            <button class="nav-btn" data-view="goals">
+                <span class="nav-icon">🎯</span>
+                <span class="nav-label">Goals</span>
+            </button>
+            <button class="nav-btn" data-view="summary">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Summary</span>
+            </button>
+            <button class="nav-btn" data-view="review">
+                <span class="nav-icon">📝</span>
+                <span class="nav-label">Review</span>
+            </button>
+        </nav>
+        <div class="header-right">
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                <span class="theme-icon">🌙</span>
+            </button>
+            <button class="notification-btn" id="notificationBtn" aria-label="Enable notifications">
+                <span class="notification-icon">🔔</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="date-navigator">
+        <button class="date-nav-btn" id="prevDay" aria-label="Previous day">‹</button>
+        <div class="current-date" id="currentDate">
+            <span class="date-day">Monday</span>
+            <span class="date-full">January 13, 2026</span>
+        </div>
+        <button class="date-nav-btn" id="nextDay" aria-label="Next day">›</button>
+        <button class="today-btn" id="todayBtn">Today</button>
+    </div>
+
+    <main class="main-content" id="mainContent">
+        <section class="view active" id="dailyView">
+            <div class="view-header">
+                <h2>Daily Schedule</h2>
+                <div class="view-actions">
+                    <span class="progress-indicator" id="dailyProgress">
+                        <span class="progress-count">0/16</span>
+                        <span class="progress-label">completed</span>
+                    </span>
+                </div>
+            </div>
+            <div class="schedule-container" id="scheduleContainer"></div>
+        </section>
+
+        <section class="view" id="goalsView">
+            <div class="view-header">
+                <h2>Weekly Goals</h2>
+                <button class="btn btn-secondary" id="editGoalsBtn">Edit Goals</button>
+            </div>
+            <div class="goals-container" id="goalsContainer"></div>
+        </section>
+
+        <section class="view" id="summaryView">
+            <div class="view-header">
+                <h2>Weekly Summary</h2>
+                <div class="week-selector">
+                    <button class="week-nav-btn" id="prevWeek">‹</button>
+                    <span class="week-range" id="weekRange">Jan 6 - Jan 12</span>
+                    <button class="week-nav-btn" id="nextWeek">›</button>
+                </div>
+            </div>
+            <div class="summary-container" id="summaryContainer"></div>
+        </section>
+
+        <section class="view" id="reviewView">
+            <div class="view-header">
+                <h2>End of Day Review</h2>
+                <span class="review-status" id="reviewStatus">Review pending</span>
+            </div>
+            <div class="review-container" id="reviewContainer"></div>
+        </section>
+    </main>
+
+    <div class="modal-overlay" id="blockModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Block Details</h3>
+                <button class="modal-close" id="modalClose" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer" id="modalFooter">
+                <button class="btn btn-secondary" id="modalCancel">Cancel</button>
+                <button class="btn btn-primary" id="modalSave">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="tradeModal">
+        <div class="modal modal-wide">
+            <div class="modal-header">
+                <h3 class="modal-title">Paper Trade Log</h3>
+                <button class="modal-close" id="tradeModalClose" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="tradeForm" class="trade-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tradeAsset">Asset</label>
+                            <input type="text" id="tradeAsset" placeholder="e.g., BTC/USD, EUR/USD" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tradeBias">Bias</label>
+                            <select id="tradeBias" required>
+                                <option value="">Select...</option>
+                                <option value="buy">Buy (Long)</option>
+                                <option value="sell">Sell (Short)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tradeEntry">Entry Price</label>
+                            <input type="number" id="tradeEntry" step="any" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tradeStopLoss">Stop Loss</label>
+                            <input type="number" id="tradeStopLoss" step="any" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="tradeTakeProfit">Take Profit</label>
+                            <input type="number" id="tradeTakeProfit" step="any" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tradeResult">Result</label>
+                            <select id="tradeResult">
+                                <option value="pending">Pending</option>
+                                <option value="win">Win</option>
+                                <option value="loss">Loss</option>
+                                <option value="breakeven">Breakeven</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="tradeNotes">Notes</label>
+                        <textarea id="tradeNotes" rows="3" placeholder="What was the setup? Why did you take this trade?"></textarea>
+                    </div>
+                </form>
+                <div class="trades-list" id="tradesList">
+                    <h4>Today's Trades</h4>
+                    <div class="trades-container" id="tradesContainer"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="tradeModalCancel">Close</button>
+                <button class="btn btn-primary" id="tradeModalSave">Add Trade</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="skipModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="skipModalTitle">Why didn't you complete this?</h3>
+                <button class="modal-close" id="skipModalClose" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="skipReason">Reason (required)</label>
+                    <textarea id="skipReason" rows="4" placeholder="Be honest with yourself. What happened?" required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="skipModalCancel">Cancel</button>
+                <button class="btn btn-primary" id="skipModalSave">Save Reason</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="tradingJournalModal">
+        <div class="modal modal-wide">
+            <div class="modal-header">
+                <h3 class="modal-title">📈 Trading Journal</h3>
+                <button class="modal-close" id="tradingJournalClose" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="tradingLessons">What I learned from today's trades</label>
+                    <textarea id="tradingLessons" rows="3" placeholder="Key lessons, patterns noticed, successful strategies..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tradingMistakes">Mistakes made</label>
+                    <textarea id="tradingMistakes" rows="3" placeholder="Errors in execution, emotional decisions, rule violations..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tradingObservations">Market observations</label>
+                    <textarea id="tradingObservations" rows="3" placeholder="Price action, volatility, correlations, news impact..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tradingImprovements">How to improve tomorrow</label>
+                    <textarea id="tradingImprovements" rows="3" placeholder="Specific actions to take, rules to follow..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="tradingJournalCancel">Cancel</button>
+                <button class="btn btn-primary" id="tradingJournalSave">Save Journal</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="dailyJournalModal">
+        <div class="modal modal-wide">
+            <div class="modal-header">
+                <h3 class="modal-title" id="dailyJournalTitle">📝 Daily Journal</h3>
+                <button class="modal-close" id="dailyJournalClose" aria-label="Close modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" id="morningSection">
+                    <label for="journalMorning">Morning Intentions & Gratitude</label>
+                    <textarea id="journalMorning" rows="4" placeholder="What am I grateful for today? What are my top priorities? How do I want to feel today?"></textarea>
+                </div>
+                <div class="form-group" id="eveningSection">
+                    <label for="journalEvening">Evening Reflection</label>
+                    <textarea id="journalEvening" rows="4" placeholder="What went well today? What could have been better? What did I learn?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="journalThoughts">Thoughts & Ideas</label>
+                    <textarea id="journalThoughts" rows="3" placeholder="Random thoughts, ideas, insights..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="journalEmotional">Emotional State</label>
+                    <textarea id="journalEmotional" rows="2" placeholder="How am I feeling? What's on my mind?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="dailyJournalCancel">Cancel</button>
+                <button class="btn btn-primary" id="dailyJournalSave">Save Journal</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/recommendations.js"></script>
+    <script src="js/views/dailyView.js"></script>
+    <script src="js/views/blockModal.js"></script>
+    <script src="js/views/journalModals.js"></script>
+    <script src="js/views/tradeForm.js"></script>
+    <script src="js/views/reviewScreen.js"></script>
+    <script src="js/views/weeklyGoals.js"></script>
+    <script src="js/views/summaryDashboard.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
