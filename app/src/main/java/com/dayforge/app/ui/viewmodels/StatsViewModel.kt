@@ -17,17 +17,40 @@ data class ForgeStats(
 
 class StatsViewModel(private val repository: DayForgeRepository) : ViewModel() {
 
-    private val today = LocalDate.now().format(java.time.format.DateTimeFormatter.ISO_DATE)
+    private val today = LocalDate.now()
+    private val todayStr = today.format(java.time.format.DateTimeFormatter.ISO_DATE)
+    private val lastWeekStr = today.minusDays(7).format(java.time.format.DateTimeFormatter.ISO_DATE)
+
+    private val _selectedPeriod = MutableStateFlow("Daily")
+    val selectedPeriod: StateFlow<String> = _selectedPeriod.asStateFlow()
+
+    fun setPeriod(period: String) {
+        _selectedPeriod.value = period
+    }
 
     val dailyStats: StateFlow<ForgeStats> = combine(
-        repository.getScheduleForDate(today),
-        repository.getTradesForDate(today),
+        repository.getScheduleForDate(todayStr),
+        repository.getTradesForDate(todayStr),
         repository.getAllGoals()
     ) { schedule, trades, goals ->
+        calculateStats(schedule, trades, goals)
+    }
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ForgeStats())
+
+    val weeklyStats: StateFlow<ForgeStats> = combine(
+        repository.getScheduleForRange(lastWeekStr, todayStr),
+        repository.getTradesForRange(lastWeekStr, todayStr),
+        repository.getAllGoals()
+    ) { schedule, trades, goals ->
+        calculateStats(schedule, trades, goals)
+    }
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ForgeStats())
+
+    private fun calculateStats(schedule: List<ScheduleBlock>, trades: List<Trade>, goals: List<Goal>): ForgeStats {
         val finished = schedule.count { it.status == "finished" }
         val rate = if (schedule.isNotEmpty()) finished.toFloat() / schedule.size else 0f
         
-        ForgeStats(
+        return ForgeStats(
             totalBlocks = schedule.size,
             completedBlocks = finished,
             tradesLogged = trades.size,
@@ -36,7 +59,6 @@ class StatsViewModel(private val repository: DayForgeRepository) : ViewModel() {
             goalPillars = goals.take(3)
         )
     }
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ForgeStats())
 }
 
 class StatsViewModelFactory(private val repository: DayForgeRepository) : ViewModelProvider.Factory {

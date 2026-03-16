@@ -11,12 +11,16 @@ class DayForgeRepository(private val dao: DayForgeDao) {
     // Schedule
     fun getScheduleForDate(date: String): Flow<List<ScheduleBlock>> = dao.getScheduleForDate(date)
     
+    fun getScheduleForRange(startDate: String, endDate: String): Flow<List<ScheduleBlock>> = dao.getScheduleForRange(startDate, endDate)
+    
     suspend fun saveSchedule(blocks: List<ScheduleBlock>) = dao.insertScheduleBlocks(blocks)
     
     suspend fun updateBlock(block: ScheduleBlock) = dao.updateScheduleBlock(block)
 
     // Trades
     fun getTradesForDate(date: String): Flow<List<Trade>> = dao.getTradesForDate(date)
+    
+    fun getTradesForRange(startDate: String, endDate: String): Flow<List<Trade>> = dao.getTradesForRange(startDate, endDate)
     
     suspend fun addTrade(trade: Trade) = dao.insertTrade(trade)
     

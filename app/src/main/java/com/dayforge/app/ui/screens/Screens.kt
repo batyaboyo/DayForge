@@ -636,7 +636,11 @@ fun SummaryScreen() {
     val repository = (context.applicationContext as DayForgeApplication).repository
     val viewModel: StatsViewModel = viewModel(factory = StatsViewModelFactory(repository))
     
-    val stats by viewModel.dailyStats.collectAsState()
+    val selectedPeriod by viewModel.selectedPeriod.collectAsState()
+    val dailyStats by viewModel.dailyStats.collectAsState()
+    val weeklyStats by viewModel.weeklyStats.collectAsState()
+    
+    val stats = if (selectedPeriod == "Daily") dailyStats else weeklyStats
 
     Column(
         modifier = Modifier
@@ -644,8 +648,17 @@ fun SummaryScreen() {
             .padding(24.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Text("Command Center", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp)
-        Text("Real-time performance metrics.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text("Command Center", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp)
+                Text("Performance metrics.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
+            }
+            PeriodSelector(selectedPeriod) { viewModel.setPeriod(it) }
+        }
         
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -691,13 +704,45 @@ fun SummaryScreen() {
         Spacer(modifier = Modifier.height(16.dp))
         
         RecommendationCard(
-            if (stats.completionRate < 0.6f) 
-                "Focus is waning. Clear the next Hacking module to maintain your momentum for the YouTube output tomorrow."
-            else 
-                "Maximum efficiency detected. Your balance across the 3 pillars is optimal. Prepare for deep work session tonight."
+            if (selectedPeriod == "Daily") {
+                if (stats.completionRate < 0.6f) 
+                    "Focus is waning. Clear the next Hacking module to maintain your momentum for the YouTube output tomorrow."
+                else 
+                    "Maximum efficiency detected. Your balance across the 3 pillars is optimal. Prepare for deep work session tonight."
+            } else {
+                if (stats.completionRate < 0.5f)
+                    "Weekly output is below target. Priority: Increase Hacking lab frequency and ensure YouTube content is edited."
+                else
+                    "Strong weekly showing. Your consistency is building serious momentum. Focus on high-level strategy for next week."
+            }
         )
         
         Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Composable
+fun PeriodSelector(selected: String, onSelect: (String) -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            .padding(4.dp)
+    ) {
+        listOf("Daily", "Weekly").forEach { period ->
+            val isSelected = selected == period
+            Surface(
+                onClick = { onSelect(period) },
+                shape = RoundedCornerShape(8.dp),
+                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.height(32.dp).padding(horizontal = 4.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 12.dp)) {
+                    Text(period, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
     }
 }
 

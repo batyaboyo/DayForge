@@ -13,6 +13,9 @@ interface DayForgeDao {
     @Query("SELECT * FROM schedule_blocks WHERE date = :date")
     fun getScheduleForDate(date: String): Flow<List<ScheduleBlock>>
 
+    @Query("SELECT * FROM schedule_blocks WHERE date BETWEEN :startDate AND :endDate")
+    fun getScheduleForRange(startDate: String, endDate: String): Flow<List<ScheduleBlock>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertScheduleBlocks(blocks: List<ScheduleBlock>)
 
