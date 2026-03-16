@@ -5,6 +5,8 @@ import com.dayforge.app.data.repository.DayForgeRepository
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
 import com.dayforge.app.data.entities.Goal
+import com.dayforge.app.data.entities.ScheduleBlock
+import com.dayforge.app.data.entities.Trade
 
 data class ForgeStats(
     val totalBlocks: Int = 0,
