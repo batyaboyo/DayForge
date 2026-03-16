@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,10 +30,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Canvas
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dayforge.app.DayForgeApplication
 import com.dayforge.app.data.entities.ScheduleBlock
@@ -71,14 +77,19 @@ fun DailyScreen() {
             modifier = Modifier.fillMaxSize()
         ) {
             items(schedule) { block ->
-                ScheduleBlockItem(block) {
-                    when (block.id) {
-                        "morning-journal" -> showMorningJournal = true
-                        "evening-journal" -> showEveningJournal = true
-                        "trading-scan" -> showTradeLog = true
-                        else -> selectedBlock = block
-                    }
-                }
+                ScheduleBlockItem(
+                    block = block,
+                    onClick = {
+                        when (block.id) {
+                            "morning-journal" -> showMorningJournal = true
+                            "evening-journal" -> showEveningJournal = true
+                            "trading-scan" -> showTradeLog = true
+                            else -> selectedBlock = block
+                        }
+                    },
+                    onToggleFinished = { dailyViewModel.toggleBlockFinished(block) },
+                    onToggleSkipped = { dailyViewModel.toggleBlockSkipped(block) }
+                )
             }
         }
     }
@@ -220,16 +231,24 @@ fun DateNavigator(
 }
 
 @Composable
-fun ScheduleBlockItem(block: ScheduleBlock, onClick: () -> Unit) {
+fun ScheduleBlockItem(
+    block: ScheduleBlock, 
+    onClick: () -> Unit,
+    onToggleFinished: () -> Unit,
+    onToggleSkipped: () -> Unit
+) {
+    val alpha = if (block.status == "skipped") 0.6f else 1f
+    
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.surfaceColorAtElevation(if (block.status == "finished") 2.dp else 0.dp),
         tonalElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        border = if (block.status == "finished") androidx.compose.foundation.BorderStroke(1.dp, StatusFinished.copy(alpha = 0.5f)) else null
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(16.dp).alpha(alpha),
             verticalAlignment = Alignment.CenterVertically
         ) {
             StatusIndicator(block.status)
@@ -240,7 +259,8 @@ fun ScheduleBlockItem(block: ScheduleBlock, onClick: () -> Unit) {
                 Text(
                     text = block.title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (block.status == "finished") StatusFinished else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = block.time,
@@ -249,20 +269,23 @@ fun ScheduleBlockItem(block: ScheduleBlock, onClick: () -> Unit) {
                 )
             }
 
-            if (block.status == "finished") {
-                Icon(
-                    Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = StatusFinished,
-                    modifier = Modifier.size(24.dp)
-                )
-            } else if (block.status == "skipped") {
-                Icon(
-                    Icons.Default.Cancel,
-                    contentDescription = null,
-                    tint = StatusSkipped,
-                    modifier = Modifier.size(24.dp)
-                )
+            Row {
+                IconButton(onClick = onToggleSkipped) {
+                    Icon(
+                        if (block.status == "skipped") Icons.Filled.Cancel else Icons.Outlined.Cancel,
+                        contentDescription = "Skip",
+                        modifier = Modifier.size(20.dp),
+                        tint = if (block.status == "skipped") StatusSkipped else MaterialTheme.colorScheme.outline
+                    )
+                }
+                IconButton(onClick = onToggleFinished) {
+                    Icon(
+                        if (block.status == "finished") Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
+                        contentDescription = "Finish",
+                        modifier = Modifier.size(20.dp),
+                        tint = if (block.status == "finished") StatusFinished else MaterialTheme.colorScheme.outline
+                    )
+                }
             }
         }
     }
@@ -501,31 +524,108 @@ fun GoalCard(
 
 @Composable
 fun ReviewScreen() {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Weekly Review", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Text("Reflect on your performance and align with your 3 pillars.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
-        
-        Spacer(modifier = Modifier.height(24.dp))
+    val context = LocalContext.current
+    val repository = (context.applicationContext as DayForgeApplication).repository
+    val viewModel: StatsViewModel = viewModel(factory = StatsViewModelFactory(repository))
+    val goalsViewModel: GoalsViewModel = viewModel(factory = GoalsViewModelFactory(repository))
+    
+    val stats by viewModel.dailyStats.collectAsState()
+    val goals by goalsViewModel.goals.collectAsState()
 
-        RecommendationCard("Weekly reflection is essential for Ethical Hacking mastery. Review your lab notes and YouTube consistency.")
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text("Weekly Review", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp)
+        Text("Pillar alignment and growth reflection.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
+        
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text("Pillar Mastery", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        goals.take(3).forEach { goal ->
+            ReviewPillarCard(goal)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        Text("Weekly Action Items", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-        Spacer(modifier = Modifier.height(12.dp))
+        Text("Mastery Action Items", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
         
         val items = listOf(
-            "Complete 3 Pentesting Labs",
-            "Film & Edit 2 YouTube Videos",
-            "Review 5 Paper Trades",
-            "Document 1 New Hacking Technique"
+            "Complete 3 Pentesting Labs" to true,
+            "Film & Edit 2 YouTube Videos" to false,
+            "Review 5 Paper Trades" to true,
+            "Document 1 New Hacking Technique" to false
         )
         
-        items.forEach { item ->
-            Row(modifier = Modifier.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = false, onCheckedChange = {})
-                Text(item, style = MaterialTheme.typography.bodyLarge)
+        items.forEach { (item, completed) ->
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(checked = completed, onCheckedChange = {})
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(item, style = MaterialTheme.typography.bodyLarge)
+                }
             }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        Text("Forge Notes", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        OutlinedTextField(
+            value = "",
+            onValueChange = {},
+            modifier = Modifier.fillMaxWidth().height(150.dp),
+            placeholder = { Text("Document your wins and lessons for the week...") },
+            shape = RoundedCornerShape(16.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Composable
+fun ReviewPillarCard(goal: Goal) {
+    val color = when (goal.category) {
+        "hacking" -> Color(0xFF00FF41)
+        "youtube" -> Color(0xFFFF0000)
+        "trading" -> Color(0xFF00C8FF)
+        else -> MaterialTheme.colorScheme.primary
+    }
+    
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(color))
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(goal.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.weight(1f))
+                Text("${(goal.progress * 100).toInt()}%", style = MaterialTheme.typography.labelLarge, color = color)
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            LinearProgressIndicator(
+                progress = { goal.progress },
+                modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
+                color = color,
+                trackColor = color.copy(alpha = 0.1f)
+            )
         }
     }
 }
@@ -538,43 +638,104 @@ fun SummaryScreen() {
     
     val stats by viewModel.dailyStats.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Daily Summary", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            StatCard("Hacking", "${stats.completedBlocks}/5", Modifier.weight(1f))
-            StatCard("YouTube", "Planned", Modifier.weight(1f))
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            StatCard("Trading", "${stats.tradesLogged}", Modifier.weight(1f))
-            StatCard("Streak", "5 Days", Modifier.weight(1f)) 
-        }
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState())
+    ) {
+        Text("Command Center", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp)
+        Text("Real-time performance metrics.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.secondary)
+        
         Spacer(modifier = Modifier.height(32.dp))
-        Text("AI Recommendation", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(12.dp))
+
+        // Progress Ring Section
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            ForgeProgressRing(progress = stats.completionRate)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "${(stats.completionRate * 100).toInt()}%",
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "FORGED",
+                    style = MaterialTheme.typography.labelLarge,
+                    letterSpacing = 2.sp,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(48.dp))
+
+        Text("Pillar Performance", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            StatCard("Hacking Labs", "${stats.completedBlocks}/${stats.totalBlocks}", Icons.Default.Build, Modifier.weight(1f))
+            StatCard("Trading", "${stats.tradesLogged} Trades", Icons.Default.TrendingUp, Modifier.weight(1f))
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            StatCard("Study Time", "${stats.studyHours}h", Icons.Default.Star, Modifier.weight(1f))
+            StatCard("Daily Streak", "12 Days", Icons.Default.TrendingUp, Modifier.weight(1f))
+        }
+
+        Spacer(modifier = Modifier.height(40.dp))
+        
+        Text("AI Forge-Sight", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
         
         RecommendationCard(
-            if (stats.completedBlocks < 3) 
-                "Lab time is essential. Try to clear at least 2 hacking modules today to stay ahead."
+            if (stats.completionRate < 0.6f) 
+                "Focus is waning. Clear the next Hacking module to maintain your momentum for the YouTube output tomorrow."
             else 
-                "Excellent focus! Your YouTube automation pipeline is looking solid. Remember to document your trading lessons tonight."
+                "Maximum efficiency detected. Your balance across the 3 pillars is optimal. Prepare for deep work session tonight."
+        )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+@Composable
+fun ForgeProgressRing(progress: Float) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val trackColor = MaterialTheme.colorScheme.surfaceVariant
+    
+    Canvas(modifier = Modifier.size(220.dp)) {
+        drawArc(
+            color = trackColor,
+            startAngle = 0f,
+            sweepAngle = 360f,
+            useCenter = false,
+            style = Stroke(width = 16.dp.toPx(), cap = StrokeCap.Round)
+        )
+        drawArc(
+            color = primaryColor,
+            startAngle = -90f,
+            sweepAngle = progress * 360f,
+            useCenter = false,
+            style = Stroke(width = 16.dp.toPx(), cap = StrokeCap.Round)
         )
     }
 }
 
 @Composable
-fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
+fun StatCard(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier = Modifier) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
         modifier = modifier
     ) {
-        Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(label, style = MaterialTheme.typography.labelMedium)
-            Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Column(modifier = Modifier.padding(20.dp)) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
+            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.secondary)
         }
     }
 }
@@ -582,14 +743,19 @@ fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
 @Composable
 fun RecommendationCard(text: String) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(modifier = Modifier.padding(16.dp)) {
-            Icon(Icons.Default.Star, contentDescription = "AI", tint = MaterialTheme.colorScheme.onSecondaryContainer)
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
+        Row(modifier = Modifier.padding(20.dp)) {
+            Icon(Icons.Default.Star, contentDescription = "AI", tint = MaterialTheme.colorScheme.primary)
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = text, 
+                style = MaterialTheme.typography.bodyLarge, 
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = 24.sp
+            )
         }
     }
 }

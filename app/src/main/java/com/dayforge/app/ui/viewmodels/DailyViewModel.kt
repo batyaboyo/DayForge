@@ -38,6 +38,20 @@ class DailyViewModel(private val repository: DayForgeRepository) : ViewModel() {
         }
     }
 
+    fun toggleBlockFinished(block: ScheduleBlock) {
+        viewModelScope.launch {
+            val newStatus = if (block.status == "finished") "not-started" else "finished"
+            repository.updateBlock(block.copy(status = newStatus))
+        }
+    }
+
+    fun toggleBlockSkipped(block: ScheduleBlock) {
+        viewModelScope.launch {
+            val newStatus = if (block.status == "skipped") "not-started" else "skipped"
+            repository.updateBlock(block.copy(status = newStatus))
+        }
+    }
+
     private fun initializeDefaultBlocks(date: LocalDate) {
         viewModelScope.launch {
             val dateStr = date.format(DateTimeFormatter.ISO_DATE)
@@ -51,10 +65,10 @@ class DailyViewModel(private val repository: DayForgeRepository) : ViewModel() {
                 ScheduleBlock("lunch", "Lunch", "12:00", "Nourish and recharge.", "meals", date = dateStr),
                 ScheduleBlock("youtube-auto", "YouTube Automation", "13:00", "Planning, editing, and channel management.", "projects", date = dateStr),
                 ScheduleBlock("deep-projects", "Deep Work / Projects", "16:00", "3-channel output management.", "projects", date = dateStr),
-                ScheduleBlock("trading-scan", "Trading Scan", "17:30", "Analyze markets and prep trades.", "trading", date = dateStr),
+                ScheduleBlock("walk", "Walk", "17:30", "Movement and fresh air.", "leisure", date = dateStr),
+                ScheduleBlock("trading-scan", "Trading Scan", "18:00", "Analyze markets and prep trades.", "trading", date = dateStr),
                 ScheduleBlock("dinner", "Dinner", "18:30", "Quality meal.", "meals", date = dateStr),
-                ScheduleBlock("walk", "Walk", "19:30", "Movement and fresh air.", "leisure", date = dateStr),
-                ScheduleBlock("trading-review", "Trading Review", "20:00", "Document lessons and journal trades.", "trading", date = dateStr),
+                ScheduleBlock("trading-review", "Trading Review", "19:30", "Document lessons and journal trades.", "trading", date = dateStr),
                 ScheduleBlock("reading", "Reading", "20:30", "Expand knowledge.", "leisure", date = dateStr),
                 ScheduleBlock("evening-journal", "Evening Journal", "21:30", "Reflect on accomplishments.", "journal", date = dateStr),
                 ScheduleBlock("reflection", "Evening Reflection", "21:45", "Review progress.", "reflection", date = dateStr),
