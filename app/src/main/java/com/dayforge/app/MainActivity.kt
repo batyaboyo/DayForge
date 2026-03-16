@@ -13,15 +13,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.dayforge.app.ui.screens.DailyScreen
-import com.dayforge.app.ui.screens.GoalsScreen
-import com.dayforge.app.ui.screens.ReviewScreen
-import com.dayforge.app.ui.screens.SummaryScreen
+import androidx.navigation.compose.*
+import com.dayforge.app.ui.screens.daily.DailyScreen
+import com.dayforge.app.ui.screens.goals.GoalsScreen
+import com.dayforge.app.ui.screens.review.ReviewScreen
+import com.dayforge.app.ui.screens.summary.SummaryScreen
 import com.dayforge.app.ui.theme.DayForgeTheme
 
 class MainActivity : ComponentActivity() {
@@ -60,7 +59,11 @@ fun MainScreen() {
         NavHost(
             navController = navController,
             startDestination = NavItem.Daily.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = { fadeIn(tween(400)) + slideInHorizontally(tween(400)) { it / 2 } },
+            exitTransition = { fadeOut(tween(400)) + slideOutHorizontally(tween(400)) { -it / 2 } },
+            popEnterTransition = { fadeIn(tween(400)) + slideInHorizontally(tween(400)) { -it / 2 } },
+            popExitTransition = { fadeOut(tween(400)) + slideOutHorizontally(tween(400)) { it / 2 } }
         ) {
             composable(NavItem.Daily.route) { DailyScreen() }
             composable(NavItem.Goals.route) { GoalsScreen() }

@@ -17,6 +17,8 @@ class DayForgeRepository(private val dao: DayForgeDao) {
     
     suspend fun updateBlock(block: ScheduleBlock) = dao.updateScheduleBlock(block)
 
+    fun getFinishedDates(): Flow<List<String>> = dao.getFinishedDates()
+
     // Trades
     fun getTradesForDate(date: String): Flow<List<Trade>> = dao.getTradesForDate(date)
     

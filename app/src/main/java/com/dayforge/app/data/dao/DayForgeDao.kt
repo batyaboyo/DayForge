@@ -22,6 +22,9 @@ interface DayForgeDao {
     @Update
     suspend fun updateScheduleBlock(block: ScheduleBlock)
 
+    @Query("SELECT DISTINCT date FROM schedule_blocks WHERE status = 'finished'")
+    fun getFinishedDates(): Flow<List<String>>
+
     // Trades
     @Query("SELECT * FROM trades WHERE date = :date")
     fun getTradesForDate(date: String): Flow<List<Trade>>

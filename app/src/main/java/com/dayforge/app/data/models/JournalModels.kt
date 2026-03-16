@@ -21,3 +21,16 @@ data class TradeJournalContent(
     val emotionalState: String = "",
     val lessonsLearned: String = ""
 )
+
+@Serializable
+data class ActionItem(
+    val id: String,
+    val text: String,
+    val isCompleted: Boolean = false
+)
+
+@Serializable
+data class WeeklyReviewContent(
+    val notes: String = "",
+    val actionItems: List<ActionItem> = emptyList()
+)
