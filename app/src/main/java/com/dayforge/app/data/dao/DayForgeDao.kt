@@ -4,6 +4,7 @@ import androidx.room.*
 import com.dayforge.app.data.entities.ScheduleBlock
 import com.dayforge.app.data.entities.Trade
 import com.dayforge.app.data.entities.JournalEntry
+import com.dayforge.app.data.entities.Goal
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -40,4 +41,14 @@ interface DayForgeDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertJournalEntry(entry: JournalEntry)
+
+    // Goals
+    @Query("SELECT * FROM goals")
+    fun getAllGoals(): Flow<List<Goal>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertGoal(goal: Goal)
+
+    @Update
+    suspend fun updateGoal(goal: Goal)
 }

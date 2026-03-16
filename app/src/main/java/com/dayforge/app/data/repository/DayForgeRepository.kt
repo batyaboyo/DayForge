@@ -4,6 +4,7 @@ import com.dayforge.app.data.dao.DayForgeDao
 import com.dayforge.app.data.entities.ScheduleBlock
 import com.dayforge.app.data.entities.Trade
 import com.dayforge.app.data.entities.JournalEntry
+import com.dayforge.app.data.entities.Goal
 import kotlinx.coroutines.flow.Flow
 
 class DayForgeRepository(private val dao: DayForgeDao) {
@@ -27,4 +28,11 @@ class DayForgeRepository(private val dao: DayForgeDao) {
     suspend fun getJournal(date: String, type: String): JournalEntry? = dao.getJournalEntry(date, type)
     
     suspend fun saveJournal(entry: JournalEntry) = dao.insertJournalEntry(entry)
+
+    // Goals
+    fun getAllGoals(): Flow<List<Goal>> = dao.getAllGoals()
+    
+    suspend fun saveGoal(goal: Goal) = dao.insertGoal(goal)
+    
+    suspend fun updateGoal(goal: Goal) = dao.updateGoal(goal)
 }
