@@ -62,7 +62,7 @@ fun DailyScreen() {
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            items(schedule) { block ->
+            items(schedule, key = { it.id }) { block ->
                 ScheduleBlockItem(
                     block = block,
                     onClick = {

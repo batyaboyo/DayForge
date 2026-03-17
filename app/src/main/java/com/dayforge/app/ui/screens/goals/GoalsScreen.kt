@@ -52,7 +52,7 @@ fun GoalsScreen() {
             verticalArrangement = Arrangement.spacedBy(20.dp),
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
-            items(goals) { goal ->
+            items(goals, key = { it.id }) { goal ->
                 GoalCard(
                     goal = goal,
                     onProgressChange = { viewModel.updateGoalProgress(goal, it) },

@@ -11,7 +11,5 @@ data class ScheduleBlock(
     val purpose: String,
     val category: String,
     val status: String = "not-started",
-    val didIt: Boolean = false,
-    val finishedIt: Boolean = false,
     val date: String // YYYY-MM-DD
 )

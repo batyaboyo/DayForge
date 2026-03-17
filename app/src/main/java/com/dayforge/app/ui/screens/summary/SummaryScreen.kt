@@ -80,7 +80,7 @@ fun SummaryScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            StatCard("Hacking Labs", "${stats.completedBlocks}/${stats.totalBlocks}", ForgeCategory.Hacking.icon, Modifier.weight(1f))
+            StatCard("Blocks Done", "${stats.completedBlocks}/${stats.totalBlocks}", ForgeCategory.Hacking.icon, Modifier.weight(1f))
             StatCard("Trading", "${stats.tradesLogged} Trades", ForgeCategory.Trading.icon, Modifier.weight(1f))
         }
         

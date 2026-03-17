@@ -14,13 +14,16 @@ class DailyViewModel(private val repository: DayForgeRepository) : ViewModel() {
     private val _selectedDate = MutableStateFlow(LocalDate.now())
     val selectedDate: StateFlow<LocalDate> = _selectedDate
 
+    private val initializingDates = mutableSetOf<String>()
+
     val schedule: StateFlow<List<ScheduleBlock>> = _selectedDate
         .flatMapLatest { date ->
             repository.getScheduleForDate(date.format(DateTimeFormatter.ISO_DATE))
         }
         .map { list -> list.sortedBy { it.time } }
         .onEach { list ->
-            if (list.isEmpty()) {
+            val dateStr = _selectedDate.value.format(DateTimeFormatter.ISO_DATE)
+            if (list.isEmpty() && initializingDates.add(dateStr)) {
                 initializeDefaultBlocks(_selectedDate.value)
             }
         }

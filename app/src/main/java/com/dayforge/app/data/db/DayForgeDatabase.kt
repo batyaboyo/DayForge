@@ -10,7 +10,7 @@ import com.dayforge.app.data.entities.Goal
 
 @Database(
     entities = [ScheduleBlock::class, Trade::class, JournalEntry::class, Goal::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class DayForgeDatabase : RoomDatabase() {
