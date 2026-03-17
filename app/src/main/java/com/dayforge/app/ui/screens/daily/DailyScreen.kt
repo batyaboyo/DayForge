@@ -66,12 +66,12 @@ fun DailyScreen() {
                 ScheduleBlockItem(
                     block = block,
                     onClick = {
-                        when (block.id) {
-                            "morning-journal" -> showMorningJournal = true
-                            "evening-journal" -> showEveningJournal = true
-                            "trading-scan" -> showTradeLog = true
-                            else -> selectedBlock = block
-                        }
+                        when {
+                        block.id.endsWith("morning-journal") -> showMorningJournal = true
+                        block.id.endsWith("evening-journal") -> showEveningJournal = true
+                        block.id.endsWith("trading-scan") -> showTradeLog = true
+                        else -> selectedBlock = block
+                    }
                     },
                     onToggleFinished = { dailyViewModel.toggleBlockFinished(block) },
                     onToggleSkipped = { dailyViewModel.toggleBlockSkipped(block) }
@@ -85,7 +85,7 @@ fun DailyScreen() {
             onDismiss = { showMorningJournal = false },
             onSave = { content ->
                 journalViewModel.saveDailyJournal(selectedDate.format(DateTimeFormatter.ISO_DATE), content)
-                dailyViewModel.updateBlockStatus(schedule.first { it.id == "morning-journal" }, "finished")
+                dailyViewModel.updateBlockStatus(schedule.first { it.id.endsWith("morning-journal") }, "finished")
                 showMorningJournal = false
             }
         )
@@ -96,7 +96,7 @@ fun DailyScreen() {
             onDismiss = { showEveningJournal = false },
             onSave = { content ->
                 journalViewModel.saveDailyJournal(selectedDate.format(DateTimeFormatter.ISO_DATE), content)
-                dailyViewModel.updateBlockStatus(schedule.first { it.id == "evening-journal" }, "finished")
+                dailyViewModel.updateBlockStatus(schedule.first { it.id.endsWith("evening-journal") }, "finished")
                 showEveningJournal = false
             }
         )
@@ -107,7 +107,7 @@ fun DailyScreen() {
             onDismiss = { showTradeLog = false },
             onSave = { trade ->
                 journalViewModel.addTrade(trade)
-                dailyViewModel.updateBlockStatus(schedule.first { it.id == "trading-scan" }, "finished")
+                dailyViewModel.updateBlockStatus(schedule.first { it.id.endsWith("trading-scan") }, "finished")
                 showTradeLog = false
             }
         )
