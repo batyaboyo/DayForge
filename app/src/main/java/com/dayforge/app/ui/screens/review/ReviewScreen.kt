@@ -111,7 +111,7 @@ fun ReviewPillarCard(goal: Goal) {
             }
             Spacer(modifier = Modifier.height(12.dp))
             LinearProgressIndicator(
-                progress = goal.progress,
+                progress = { goal.progress },
                 modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape),
                 color = color,
                 trackColor = color.copy(alpha = 0.1f)

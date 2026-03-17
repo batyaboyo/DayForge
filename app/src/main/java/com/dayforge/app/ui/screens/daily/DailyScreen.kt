@@ -85,7 +85,9 @@ fun DailyScreen() {
             onDismiss = { showMorningJournal = false },
             onSave = { content ->
                 journalViewModel.saveDailyJournal(selectedDate.format(DateTimeFormatter.ISO_DATE), content)
-                dailyViewModel.updateBlockStatus(schedule.first { it.id.endsWith("morning-journal") }, "finished")
+                schedule.firstOrNull { it.id.endsWith("morning-journal") }?.let {
+                    dailyViewModel.updateBlockStatus(it, "finished")
+                }
                 showMorningJournal = false
             }
         )
@@ -96,7 +98,9 @@ fun DailyScreen() {
             onDismiss = { showEveningJournal = false },
             onSave = { content ->
                 journalViewModel.saveDailyJournal(selectedDate.format(DateTimeFormatter.ISO_DATE), content)
-                dailyViewModel.updateBlockStatus(schedule.first { it.id.endsWith("evening-journal") }, "finished")
+                schedule.firstOrNull { it.id.endsWith("evening-journal") }?.let {
+                    dailyViewModel.updateBlockStatus(it, "finished")
+                }
                 showEveningJournal = false
             }
         )
@@ -104,10 +108,13 @@ fun DailyScreen() {
 
     if (showTradeLog) {
         TradeLogDialog(
+            selectedDate = selectedDate.format(DateTimeFormatter.ISO_DATE),
             onDismiss = { showTradeLog = false },
             onSave = { trade ->
                 journalViewModel.addTrade(trade)
-                dailyViewModel.updateBlockStatus(schedule.first { it.id.endsWith("trading-scan") }, "finished")
+                schedule.firstOrNull { it.id.endsWith("trading-scan") }?.let {
+                    dailyViewModel.updateBlockStatus(it, "finished")
+                }
                 showTradeLog = false
             }
         )

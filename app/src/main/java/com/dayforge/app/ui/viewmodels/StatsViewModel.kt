@@ -29,7 +29,7 @@ class StatsViewModel(private val repository: DayForgeRepository) : ViewModel() {
     private val today = LocalDate.now()
     private val todayStr = today.format(DateTimeFormatter.ISO_DATE)
     private val lastWeekStr = today.minusDays(7).format(DateTimeFormatter.ISO_DATE)
-    private val currentWeekKey = "week-${today.year}-${today.monthValue}-${today.dayOfMonth / 7}" // Simple week key
+    private val currentWeekKey = "week-${today.year}-W${today.get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear())}"
 
     private val _selectedPeriod = MutableStateFlow("Daily")
     val selectedPeriod: StateFlow<String> = _selectedPeriod.asStateFlow()

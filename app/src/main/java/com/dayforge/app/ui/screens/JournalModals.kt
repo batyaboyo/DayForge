@@ -54,6 +54,7 @@ fun MorningJournalDialog(
 
 @Composable
 fun TradeLogDialog(
+    selectedDate: String = LocalDate.now().format(DateTimeFormatter.ISO_DATE),
     onDismiss: () -> Unit,
     onSave: (Trade) -> Unit
 ) {
@@ -95,7 +96,7 @@ fun TradeLogDialog(
                     stopLoss = 0.0,
                     takeProfit = 0.0,
                     notes = "",
-                    date = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+                    date = selectedDate
                 ))
             }) { Text("Record Trade") }
         },

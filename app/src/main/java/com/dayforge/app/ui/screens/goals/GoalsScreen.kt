@@ -74,7 +74,7 @@ fun GoalCard(
     onToggleSkipped: () -> Unit
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
-    var tempStatus by remember { mutableStateOf(goal.status) }
+    var tempStatus by remember(goal.status) { mutableStateOf(goal.status) }
 
     val cardAlpha = if (goal.isSkipped) 0.6f else 1f
     
